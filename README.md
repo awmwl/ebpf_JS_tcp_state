@@ -1,7 +1,3 @@
-非常好，这些信息已经很详实了！我已经将你提供的内容整理成适合 GitHub 的英文 `README.md` 文件，涵盖项目简介、结构说明、主要功能及注意事项。你可以将以下内容复制粘贴为 `README.md` 文件：
-
----
-
 # 📊 eBPF-based TCP State Modeling for Slow HTTP Attack Detection
 
 This project implements a lightweight, kernel-assisted detection approach for slow HTTP attacks (e.g., slow HTTP Header/Body/Read attacks), by modeling TCP state transitions and evaluating abnormal behaviors using **Jensen-Shannon (JS) divergence**.
@@ -55,9 +51,9 @@ ebpf_JS_tcp_state/
 * Contains all Jupyter notebooks for data visualization and divergence analysis.
 * Includes:
 
-  * `Probability_distribution_statistics.ipynb`: Visualizes collected distributions
+  * `Probability_distribution_statistics.ipynb`: Visualizes collected distributions (see: [Notebook](https://github.com/awmwl/ebpf_JS_tcp_state/blob/main/Data_analysis/Probability_distribution_statistics.ipynb))
   * `allJSKL.ipynb`: Compares JS vs KL divergence (see: [Notebook](https://github.com/awmwl/ebpf_JS_tcp_state/blob/main/Data_analysis/allJSKL.ipynb))
-  * `js_threshold_analysis.ipynb`: Threshold tuning and generation of `baseline.json`
+  * `js_threshold_analysis.ipynb`: Threshold tuning and generation of `baseline.json` (see: [Notebook](https://github.com/awmwl/ebpf_JS_tcp_state/blob/main/Data_analysis/js_threshold_analysis.ipynb))
 
 👉 A separate `README.md` exists in the `Data_analysis/` folder with more details.
 
