@@ -10,7 +10,7 @@ WINDOW_SIZE = 6       # 总共采样次数
 
 prog = """
 #include <uapi/linux/ptrace.h>
-#include <net/tcp.h>
+#include <net/tcp_states.h>
 
 struct key_t {
     u16 old_state;
