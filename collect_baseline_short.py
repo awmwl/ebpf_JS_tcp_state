@@ -41,6 +41,7 @@ class Key(ctypes.Structure):
 
 b = BPF(text=prog)
 
+# 采样归一化
 def calc_prob_distribution(counts):
     total_by_old = {}
     for (old, new), cnt in counts.items():
@@ -51,6 +52,27 @@ def calc_prob_distribution(counts):
         if total > 0:
             probs[f"{old}-{new}"] = cnt / total
     return probs
+
+# 滑动平均归一化
+def normalize_avg_probs(avg_probs):
+    row_sums = {}
+
+    # Step 1: 计算每个 old_state 的总和
+    for key, prob in avg_probs.items():
+        old, new = map(int, key.split('-'))
+        row_sums[old] = row_sums.get(old, 0.0) + prob
+
+    # Step 2: 对每个 key 做归一化
+    normalized = {}
+    for key, prob in avg_probs.items():
+        old, _ = map(int, key.split('-'))
+        row_sum = row_sums.get(old, 1.0)
+        if row_sum > 0:
+            normalized[key] = prob / row_sum
+        else:
+            normalized[key] = 0.0
+    return normalized
+
 
 window = deque(maxlen=WINDOW_SIZE)
 
@@ -84,9 +106,25 @@ output = {
     "duration_sec": SAMPLE_INTERVAL * WINDOW_SIZE,
     "probabilities": avg_probs
 }
+# （1）end
 
 
-# （1）归一化平均分布
+# （2）采样-滑动平均归一化
+avg_probs = {}
+for sample in window:
+    for key, p in sample.items():
+        avg_probs[key] = avg_probs.get(key, 0.0) + p
+for key in avg_probs:
+    avg_probs[key] /= len(window)
+
+# 保存到 JSON
+output = {
+    "duration_sec": SAMPLE_INTERVAL * WINDOW_SIZE,
+    "probabilities": avg_probs
+}
+# （2）end
+
+# （3）归一化平均分布
 # step 1: 累加窗口内概率
 prob_matrix = {}
 total_by_old = {}
@@ -116,7 +154,7 @@ output = {
     "duration_sec": SAMPLE_INTERVAL * WINDOW_SIZE,
     "probabilities": final_probs
 }
-
+# （3）end
 
 filename = f"baseline_short{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 with open(filename, "w") as f:
