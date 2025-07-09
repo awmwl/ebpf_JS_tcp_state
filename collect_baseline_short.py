@@ -71,7 +71,7 @@ for i in range(WINDOW_SIZE):
 
     print(f"✅ Sample {i+1}/{WINDOW_SIZE} collected.")
 
-# 平均分布
+# （1）平均分布
 avg_probs = {}
 for sample in window:
     for key, p in sample.items():
@@ -84,6 +84,39 @@ output = {
     "duration_sec": SAMPLE_INTERVAL * WINDOW_SIZE,
     "probabilities": avg_probs
 }
+
+
+# （1）归一化平均分布
+# step 1: 累加窗口内概率
+prob_matrix = {}
+total_by_old = {}
+
+for sample in window:
+    for key, prob in sample.items():
+        old, new = map(int, key.split('-'))
+        prob_matrix[(old, new)] = prob_matrix.get((old, new), 0.0) + prob
+
+# step 2: 对每个 old_state 求平均
+for (old, new) in prob_matrix:
+    prob_matrix[(old, new)] /= len(window)
+
+# step 3: 按 old_state 归一化，得到最终概率分布
+final_probs = {}
+row_sums = {}
+
+for (old, new), p in prob_matrix.items():
+    row_sums[old] = row_sums.get(old, 0.0) + p
+
+for (old, new), p in prob_matrix.items():
+    if row_sums[old] > 0:
+        final_probs[f"{old}-{new}"] = p / row_sums[old]
+
+# 保存到 JSON
+output = {
+    "duration_sec": SAMPLE_INTERVAL * WINDOW_SIZE,
+    "probabilities": final_probs
+}
+
 
 filename = f"baseline_short{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 with open(filename, "w") as f:
