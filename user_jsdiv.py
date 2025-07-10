@@ -63,6 +63,7 @@ process = psutil.Process()
 cpu_usage_list = []
 mem_usage_list = []
 timestamp_list = []
+detection_result_list = []
 
 
 def load_baseline(path="baseline.json"):
@@ -108,8 +109,10 @@ def signal_handler(sig, frame):
         f.write("timestamp,cpu_percent,rss_mib\n")
         for t, c, m in zip(timestamp_list, cpu_usage_list, mem_usage_list):
             f.write(f"{t:.2f},{c:.2f},{m:.2f}\n")
-
     print(f"Saved resource usage to resource_usage.csv")
+    with open("js_detection_output.json", "w") as f:
+        json.dump(detection_result_list, f, indent=4)
+    print(f"Saved Detection Result to js_detection_output.json")
  
     sys.exit(0)
 
@@ -162,7 +165,18 @@ while True:
     else:
         consecutive_exceed_count = 0
 
-        # 记录资源消耗
+
+    
+    detection_result = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "js_divergence": instant_js,
+        "threshold": js_threshold_confirm,
+        "alert": instant_js > js_threshold_confirm,
+        "top_diff_states": sorted(current_probs, key=lambda k: abs(current_probs.get(k, 0.0) - baseline_probs.get(k, 0.0)), reverse=True)[:3]
+    }
+    detection_result_list.append(detection_result)
+
+    # 记录资源消耗
     cpu = process.cpu_percent(interval=None)  # 上一个采样点以来的平均CPU占用（百分比）
     mem = process.memory_info().rss / (1024 * 1024)  # 常驻内存，单位 MiB
     ts = time.time()
